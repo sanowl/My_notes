@@ -45,6 +45,79 @@ The attention mechanism can be decomposed into:
    The attention scores relate to cosine similarity:
    $$s_{ij} = \frac{q_i^T k_j}{\sqrt{d_k}} = \sqrt{d_k}\cos(\theta_{ij})$$
 
+### Extended Geometric Properties
+
+1. **Hypersphere Manifold Analysis**:
+   The normalized queries and keys form a manifold:
+   $$M = \{x \in \mathbb{R}^{d_k} : \|x\| = \sqrt{d_k}\}$$
+   
+   Angular distributions:
+   $$P(\theta_{ij}) \propto exp(\frac{\cos(\theta_{ij})}{\sqrt{d_k}})$$
+
+2. **Statistical Properties of Attention Scores**:
+   Mean and variance analysis:
+   $$\mathbb{E}[s_{ij}] = 0$$
+   $$Var[s_{ij}] = \frac{1}{d_k}\sum_{l=1}^{d_k} Var[q_{il}k_{jl}]$$
+
+### Information Flow Analysis
+
+1. **Entropy Dynamics**:
+   For attention distribution $P$:
+   $$H(P) = -\sum_{i,j} p_{ij}\log p_{ij}$$
+   
+   Conditional entropy:
+   $$H(Y|X) = -\mathbb{E}_{x,y}[\log p(y|x)]$$
+
+2. **Mutual Information Bounds**:
+   $$I(X;Y) \leq \min(H(X), H(Y))$$
+   $$I(X;Y) \geq \max(H(X) + H(Y) - \log|V|, 0)$$
+   where $|V|$ is the dimension of the value space
+
+### Mathematical Properties of Attention Operations
+
+1. **Gradient Chain Analysis**:
+   Full gradient decomposition:
+   $$\frac{\partial \mathcal{L}}{\partial Q} = \sum_{i=1}^n \sum_{j=1}^m \frac{\partial \mathcal{L}}{\partial o_i} \cdot \frac{\partial o_i}{\partial \alpha_{ij}} \cdot \frac{\partial \alpha_{ij}}{\partial s_{ij}} \cdot \frac{\partial s_{ij}}{\partial Q}$$
+
+2. **Softmax Jacobian**:
+   For attention weights:
+   $$J_{ij,kl} = \frac{\partial \alpha_{ij}}{\partial s_{kl}} = \alpha_{ij}(\delta_{ik} - \alpha_{kl})$$
+
+3. **Convergence Analysis**:
+   For iterative attention:
+   $$\|A^{(t+1)} - A^{(t)}\| \leq \lambda\|A^{(t)} - A^{(t-1)}\|$$
+   where $\lambda < 1$ ensures convergence
+
+### Complexity and Efficiency Analysis
+
+1. **Memory Access Patterns**:
+   Memory bandwidth utilization:
+   $$B = \frac{4nm(d_k + d_v)}{t_{computation}}$$
+
+2. **Computational Graph Structure**:
+   For parallel computation:
+   $$G = (V,E), |V| = O(nmd_k), |E| = O(n^2d_k)$$
+
+3. **Space-Time Tradeoffs**:
+   Memory-compute relationship:
+   $$M \cdot T \geq \Omega(n^2d_k)$$
+
+### Theoretical Bounds and Limitations
+
+1. **Approximation Error Bounds**:
+   For truncated attention:
+   $$\|Attention(Q,K,V) - Attention_{trunc}(Q,K,V)\| \leq \epsilon$$
+   when $k \geq \frac{\log(1/\epsilon)}{\log(1/\gamma)}$
+
+2. **Capacity Limitations**:
+   Information bottleneck:
+   $$I(X;Y) \leq C_{attention} = \log(n)$$
+
+3. **Stability Conditions**:
+   For stable attention:
+   $$\|\frac{\partial o}{\partial x}\| \leq L\|x\|$$
+   where $L$ is the Lipschitz constant
+
 ## Scaled Dot-Product Attention
 
 The core attention mechanism is defined as:
@@ -85,7 +158,19 @@ def scaled_dot_product_attention(query, key, value, mask=None):
 
 ![Attention Mechanism](./images/attention_mechanism.png)
 
-## Advanced Attention Analysis
+### Additional Mathematical Insights
+
+1. **Dynamical Systems View**:
+   Attention as continuous transformation:
+   $$\frac{d h(t)}{dt} = \sigma(QK^T)V - h(t)$$
+
+2. **Probabilistic Interpretation**:
+   Attention as mixture model:
+   $$p(y|x) = \sum_{i=1}^n \alpha_i(x)p(y|v_i)$$
+
+3. **Energy-Based Formulation**:
+   $$E(Q,K) = -\frac{QK^T}{\sqrt{d_k}}$$
+   $$P(A|Q,K) \propto \exp(-E(Q,K))$$
 
 ### 1. Information Theoretic View
 The attention mechanism maximizes mutual information:
@@ -126,7 +211,7 @@ $$\frac{\partial \mathcal{L}}{\partial Q} = \frac{\partial \mathcal{L}}{\partial
    $$M_{total} = M_{QK} + M_{attention} + M_{output}$$
    $$= (2nd + n^2 + nd)$$
 
-### 4. Advanced Implementation
+### 4. Implementation
 
 ```python
 class TransformerAttention(nn.Module):
